@@ -19,6 +19,9 @@ med_filter  = filter(RESERVED)
 pi_camera   = camera()
 baro_sensor = barometer()
 
+# file
+data = file("data/data_" + str(time()).replace(".", "") + ".txt", "w")
+
 # some helper variables for image taking
 take_picture  = False
 elapsed_time  = TIME
@@ -32,6 +35,8 @@ output += format("TempF", "<10s")
 
 # TODO: currently printing to console, but need to print to a file
 print(output)
+data.write(output)
+data.write("\n")
 
 # a forever loop that constantly reads and handles data
 # 1. barometer values are read and correct pressure is added to median filter
@@ -49,6 +54,8 @@ while True:
 
     # TODO: currently printing to console, but need to print to a file
     print(output)
+    data.write(output)
+    data.write("\n")
 
     # determine boom deployment time
     median = med_filter.median()
