@@ -13,7 +13,7 @@ class filter:
     def add(self, value):
         if len(self.data) == self.reserved:
             self.data.pop(0)
-        self.data.append(value)
+        self.data.append(float(value))
 
     # retrieving median value
     def median(self):
@@ -21,8 +21,8 @@ class filter:
 
         for i in range(self.reserved):
             if self.data[i] != None:
-                self.sorted.append(self.data[i])
+                self.sorted.append(float(self.data[i]))
 
         self.sorted.sort()
-        middle = math.floor(len(self.sorted) / 2)
+        middle = int(math.floor(len(self.sorted) / 2))
         return self.sorted[middle]

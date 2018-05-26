@@ -9,5 +9,5 @@ class camera:
         self.camera = picamera.PiCamera()
         self.dir = directory
         
-    def takePicture():
+    def takePicture(self):
         self.camera.capture(self.dir + str(time()).replace(".", "") + ".jpg")

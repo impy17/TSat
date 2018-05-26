@@ -1,0 +1,4 @@
+in camera, have it make directory if directory does not already exists
+save information to internal file -- pipe the output, yay, or something
+get program to run on startup
+set secondary wire cutter pin to high when wanting to deploy boom

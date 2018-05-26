@@ -2,32 +2,33 @@
 
 # TODO: handling errors
 
-from camera import camera
-from baro import barometer
-from median_filter import filter
+from lib.camera import camera
+from lib.barometer import barometer
+from lib.median_filter import filter
+from time import sleep
 from time import time
 
 # constants
 RESERVED = 7  # number of values for median filter
 LO_PRES = 15  # for pressure range, low value
 HI_PRES = 35  # for pressure range, high value
-TIME = 30000  # in miliseconds, for picture taking delay
+TIME = 30  # in miliseconds, for picture taking delay
 
 # initialization of components
-med_filter = filter(RESERVED)
-pi_camera = camera()
+med_filter  = filter(RESERVED)
+pi_camera   = camera()
 baro_sensor = barometer()
 
 # some helper variables for image taking
-take_picture = False
-elapsed_time = TIME
+take_picture  = False
+elapsed_time  = TIME
 previous_time = 0
 
 # initial output
 output = ""
-output += format("Pressure", "^10s")
-output += format("Altitude", "^10s")
-output += format("Temp", "^10s")
+output += format("Pressure", "<10s")
+output += format("TempC", "<10s")
+output += format("TempF", "<10s")
 
 # TODO: currently printing to console, but need to print to a file
 print(output)
@@ -39,12 +40,12 @@ print(output)
 # 4. if boom was deployed, picture is taken every TIME miliseconds
 while True:
     baro_sensor.readBaro()
-    med_filter.add(baro_sensor.getCorrectPressure())
+    med_filter.add(baro_sensor.getPressure())
 
     output = ""
-    output += format("%.2f " % baro_sensor.getCorrectPressure(), ">10s")
-    output += format("%.2f " % baro_sensor.getAltitude(), ">10s")
-    output += format("%.2f " % baro_sensor.getTemp(), ">10s")
+    output += format("%.2f " % baro_sensor.getPressure(), ">10s")
+    output += format("%.2f " % baro_sensor.getTemperatureC(), ">10s")
+    output += format("%.2f " % baro_sensor.getTemperatureF(), ">10s")
 
     # TODO: currently printing to console, but need to print to a file
     print(output)
@@ -62,6 +63,8 @@ while True:
             pi_camera.takePicture()
             previous_time = time()
         else:
-            time = time()
-            elapsed_time += time - previous_time
-            previous_time = time
+            current_time = time()
+            elapsed_time += current_time - previous_time
+            previous_time = current_time
+
+    sleep(1)  # sleep for 1 second
