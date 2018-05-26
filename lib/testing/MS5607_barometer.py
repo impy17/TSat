@@ -7,7 +7,7 @@ import time
 
 bus = smbus.SMBus(1)
 
-class barometer:
+class MS5607:
 
     DEVICE_ADDRESS = 0x76
 
