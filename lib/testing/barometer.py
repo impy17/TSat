@@ -15,9 +15,9 @@ import time
 
 bus = smbus.SMBus(1)
 
-class barometer:
+DEVICE_ADDRESS = 0x76
 
-    DEVICE_ADDRESS = 0x76
+class barometer:
 
     def __init__(self):
         self.resetCommand()
@@ -34,18 +34,18 @@ class barometer:
 
     def readBaro(self):
         # read digital pressure value
-        pressureConversionCommand()
-        self.D1 = readDigitalValue()
+        self.pressureConversionCommand()
+        self.D1 = self.readDigitalValue()
 
         # read digital temperature value
-        temperatureConversionCommand()
-        self.D2 = readDigitalValue()
+        self.temperatureConversionCommand()
+        self.D2 = self.readDigitalValue()
 
         # calculations
-        self.dT   = self.D2 - self.C[5] * 256
-        self.TEMP = 2000 + self.dT * self.C[6] / 8388608
-        self.OFF  = self.C[2] * 131072 + (self.C[4] * self.dT) / 64
-        self.SENS = self.C[1] * 65536 + (self.C[3] * self.dT) / 128
+        self.dT   = self.D2 - self.C[4] * 256
+        self.TEMP = 2000 + self.dT * self.C[5] / 8388608
+        self.OFF  = self.C[1] * 131072 + (self.C[3] * self.dT) / 64
+        self.SENS = self.C[0] * 65536 + (self.C[2] * self.dT) / 128
 
         TEMP2 = 0
         OFF2  = 0
@@ -69,35 +69,35 @@ class barometer:
 
     # UTILITY FUNCTIONS
     def readCalibrations(self): 
-        coefficients = [] * 6
+        coefficients = [0] * 6
         
         # pressure sensitivity
-        coefficients[0] = readCalibration(0xA2)
+        coefficients[0] = self.readCalibration(0xA2)
 
         # pressure offset
-        coefficients[1] = readCalibration(0xA4)
+        coefficients[1] = self.readCalibration(0xA4)
 
         # temperature coefficient of pressure sensitivity
-        coefficients[2] = readCalibration(0xA6)
+        coefficients[2] = self.readCalibration(0xA6)
 
         # temperature coefficient of pressure offset
-        coefficients[3] = readCalibration(0xA8)
+        coefficients[3] = self.readCalibration(0xA8)
 
         # reference temperature
-        coefficients[4] = readCalibration(0xAA)
+        coefficients[4] = self.readCalibration(0xAA)
 
         # temperature coefficient of temperature
-        coefficients[5] = readCalibration(0xAC)
+        coefficients[5] = self.readCalibration(0xAC)
 
         return coefficients
 
-    def readCalibration(self, coefficent):
+    def readCalibration(self, coefficient):
         data = bus.read_i2c_block_data(DEVICE_ADDRESS, coefficient, 2)
         return data[0] * 256 + data[1]
 
     def readDigitalValue(self):
         value = bus.read_i2c_block_data(DEVICE_ADDRESS, 0x00, 3)
-        return value[9] * 65536 + value[1] * 256 + value[2]
+        return value[0] * 65536 + value[1] * 256 + value[2]
 
     def resetCommand(self):
         bus.write_byte(DEVICE_ADDRESS, 0x1E)

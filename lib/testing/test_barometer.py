@@ -14,3 +14,5 @@ while True:
     print(format("Pressure (in millibars): %.2f" % pressure, "<35s") +
             format("TempC: %.2f" % tempC, "<20s") +
             format("TempF: %.2f" % tempF, "<20s"))
+
+    time.sleep(1)
