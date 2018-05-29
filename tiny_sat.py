@@ -1,6 +1,6 @@
 # this file is inteded to run on startup, so make sure to add it as a daemon
 
-# TODO: handling errors
+# TODO: error handling
 
 from lib.camera import camera
 from lib.clock import clock
@@ -12,9 +12,10 @@ from time import time
 
 # constants
 RESERVED = 7  # number of values for median filter
-LO_PRES = 840  # for pressure range, low value
-HI_PRES = 860  # for pressure range, high value
+LO_PRES = 840  # for pressure range, low value  # TODO: 15 for flight
+HI_PRES = 860  # for pressure range, high value  # TODO: 35 for flight
 TIME = 60     # in seconds, for picture taking delay
+DATA_SMPL = 2  # length in seconds between data samples
 
 # initialization of components
 med_filter  = filter(RESERVED)
@@ -33,8 +34,8 @@ output = ""
 output += format("Pressure" + "\t")
 output += format("   TempC" + "\t")
 output += format("   TempF" + "\t")
-output += format("Altitude" + "\t")
-output += format("    Time" + "\t")
+output += format("Altitude" + "\t")  # change in altitude from first sampling
+output += format("    Time" + "\t")  # increment of time starting at 00:00:00
 
 # printing to console and csv file
 print(output)
@@ -44,7 +45,8 @@ data_file.write(output)
 # 1. barometer values are read and correct pressure is added to median filter
 # 2. new output is displayed and saved to correct file
 # 3. if pressure is in correct range, boom is deployed
-# 4. if boom was deployed, picture is taken every TIME miliseconds
+# 4. if boom was deployed, picture is taken every TIME seconds
+# 5. wait DATA_SMPL seconds before sampling data again
 while True:
     # reading from components
     baro_sensor.readBaro()
@@ -71,6 +73,7 @@ while True:
     # determine boom deployment time
     if median <= HI_PRES and median >= LO_PRES:
         # TODO: send high to wire cutters
+        # TODO: handle boom switch?
         take_picture = True
 
     # determine picture taking time
@@ -84,4 +87,4 @@ while True:
             elapsed_time += current_time - previous_time
             previous_time = current_time
 
-    sleep(2)  # sleep for 2 seconds
+    sleep(DATA_SMPL)  # waiting between samples
