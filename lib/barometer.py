@@ -39,7 +39,7 @@ class barometer:
 
         # for base altitude calculation
         self.readBaro()
-        self.base_altitude = self.calculateAltitude()
+        self.base_altitude = self.calculateAltitude(self.pressure)
         self.change_altitude = 0
 
     def readBaro(self):
@@ -123,8 +123,8 @@ class barometer:
         bus.write_byte(DEVICE_ADDRESS, 0x50)
         time.sleep(0.003)
 
-    def calculateAltitude(self):
-        altitude = 1 - math.pow((self.pressure / 1013.25), 0.190264)
+    def calculateAltitude(self, pressure):
+        altitude = 1 - math.pow((pressure / 1013.25), 0.190264)
         altitude *= 44330.76923
         return altitude
 
@@ -138,7 +138,7 @@ class barometer:
     def getTemperatureF(self):
         return self.tempF
 
-    def getAltitude(self):
-        self.change_altitude = self.calculateAltitude()
-        self.change_altitude -= self.base_altitude()
-        return self.change_altitude()
+    def getAltitude(self, pressure):
+        self.change_altitude = self.calculateAltitude(pressure)
+        self.change_altitude -= self.base_altitude
+        return self.change_altitude

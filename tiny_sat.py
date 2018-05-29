@@ -24,9 +24,6 @@ elapsed_clk = clock()
 # opening file
 data = file("data/data.txt", "w")
 
-# file
-data = file("data/data_" + str(time()).replace(".", "") + ".txt", "w")
-
 # some helper variables for image taking
 take_picture  = False
 elapsed_time  = TIME
@@ -55,11 +52,14 @@ while True:
     med_filter.add(baro_sensor.getPressure())
     elapsed_clk.readTime()
 
+    # get median
+    median = med_filter.median()
+
     output = ""
     output += format("%.2f " % baro_sensor.getPressure(), "<10s")
     output += format("%.2f " % baro_sensor.getTemperatureC(), "<10s")
     output += format("%.2f " % baro_sensor.getTemperatureF(), "<10s")
-    output += format("%.2f " % baro_sensor.getAltitude(), "<10s")
+    output += format("%.2f " % baro_sensor.getAltitude(median), "<10s")
     output += format("%02d:%02d:%02d" % (elapsed_clk.getHours(),
             elapsed_clk.getMinutes(),
             elapsed_clk.getSeconds()),
@@ -71,7 +71,6 @@ while True:
     data.write("\n")
 
     # determine boom deployment time
-    median = med_filter.median()
     if median <= HI_PRES and median >= LO_PRES:
         # TODO: send high to wire cutters
         take_picture = True
