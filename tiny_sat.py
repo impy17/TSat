@@ -3,6 +3,7 @@
 # TODO: handling errors
 
 from lib.camera import camera
+from lib.clock import clock
 from lib.barometer import barometer
 from lib.median_filter import filter
 from time import sleep
@@ -12,12 +13,16 @@ from time import time
 RESERVED = 7  # number of values for median filter
 LO_PRES = 15  # for pressure range, low value
 HI_PRES = 35  # for pressure range, high value
-TIME = 30  # in miliseconds, for picture taking delay
+TIME = 60     # in seconds, for picture taking delay
 
 # initialization of components
 med_filter  = filter(RESERVED)
 pi_camera   = camera()
 baro_sensor = barometer()
+elapsed_clk = clock()
+
+# opening file
+data = file("data/data.txt", "w")
 
 # some helper variables for image taking
 take_picture  = False
@@ -29,9 +34,12 @@ output = ""
 output += format("Pressure", "<10s")
 output += format("TempC", "<10s")
 output += format("TempF", "<10s")
+output += format("Altitude", "<10s")
+output += format("Time", "<10s")
 
-# TODO: currently printing to console, but need to print to a file
+# TODO: currently printing to console, but need to print to a tabbed file
 print(output)
+data.write(output)
 
 # a forever loop that constantly reads and handles data
 # 1. barometer values are read and correct pressure is added to median filter
@@ -41,14 +49,21 @@ print(output)
 while True:
     baro_sensor.readBaro()
     med_filter.add(baro_sensor.getPressure())
+    elapsed_clk.readTime()
 
     output = ""
-    output += format("%.2f " % baro_sensor.getPressure(), ">10s")
-    output += format("%.2f " % baro_sensor.getTemperatureC(), ">10s")
-    output += format("%.2f " % baro_sensor.getTemperatureF(), ">10s")
+    output += format("%.2f " % baro_sensor.getPressure(), "<10s")
+    output += format("%.2f " % baro_sensor.getTemperatureC(), "<10s")
+    output += format("%.2f " % baro_sensor.getTemperatureF(), "<10s")
+    output += format("%.2f " % baro_sensor.getAltitude(), "<10s")
+    output += format("%02d:%02d:%02d" % (elapsed_clk.getHours(),
+            elapsed_clk.getMinutes(),
+            elapsed_clk.getSeconds()),
+            "<10s")
 
-    # TODO: currently printing to console, but need to print to a file
+    # TODO: currently printing to console, but need to print to a tabbed file
     print(output)
+    data.write(output)
 
     # determine boom deployment time
     median = med_filter.median()
@@ -67,4 +82,4 @@ while True:
             elapsed_time += current_time - previous_time
             previous_time = current_time
 
-    sleep(1)  # sleep for 1 second
+    sleep(2)  # sleep for 1 second

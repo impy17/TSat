@@ -9,6 +9,9 @@
 # potentially be achieved, but such a venture will not be persued at
 # this time
 
+# concerning the calculations of altitude found in the code below, it is
+# rather a calculation of the change in altitude from some base
+
 import math
 import smbus
 import time
@@ -32,6 +35,13 @@ class barometer:
         self.tempC    = 0  # in degrees C
         self.tempF    = 0  # in degrees F
 
+        time.sleep(0.003)
+
+        # for base altitude calculation
+        self.readBaro()
+        self.base_altitude = self.calculateAltitude()
+        self.change_altitude = 0
+
     def readBaro(self):
         # read digital pressure value
         self.pressureConversionCommand()
@@ -41,7 +51,7 @@ class barometer:
         self.temperatureConversionCommand()
         self.D2 = self.readDigitalValue()
 
-        # calculations
+        # pressure and temperature calculations
         self.dT   = self.D2 - self.C[4] * 256
         self.TEMP = 2000 + self.dT * self.C[5] / 8388608
         self.OFF  = self.C[1] * 131072 + (self.C[3] * self.dT) / 64
@@ -66,6 +76,8 @@ class barometer:
         self.pressure = ((((self.D1 * self.SENS) / 2097152) - self.OFF) / 32768.0) / 100.0
         self.tempC    = self.TEMP / 100.0
         self.tempF    = self.tempC * 1.8 + 32
+
+        # change in altitude calculations
 
     # UTILITY FUNCTIONS
     def readCalibrations(self): 
@@ -111,6 +123,11 @@ class barometer:
         bus.write_byte(DEVICE_ADDRESS, 0x50)
         time.sleep(0.003)
 
+    def calculateAltitude(self):
+        altitude = 1 - math.pow((self.pressure / 1013.25), 0.190264)
+        altitude *= 44330.76923
+        return altitude
+
     # GETTER FUNCTIONS
     def getPressure(self):
         return self.pressure
@@ -120,3 +137,8 @@ class barometer:
 
     def getTemperatureF(self):
         return self.tempF
+
+    def getAltitude(self):
+        self.change_altitude = self.calculateAltitude()
+        self.change_altitude -= self.base_altitude()
+        return self.change_altitude()
