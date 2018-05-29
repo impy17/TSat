@@ -4,7 +4,7 @@
 
 from lib.camera import camera
 from lib.clock import clock
-from lib.csv_file import csv_file
+from lib.csv_file import csvFile
 from lib.barometer import barometer
 from lib.median_filter import filter
 from time import sleep
@@ -12,7 +12,7 @@ from time import time
 
 # constants
 RESERVED = 7  # number of values for median filter
-LO_PRES = 830  # for pressure range, low value
+LO_PRES = 840  # for pressure range, low value
 HI_PRES = 860  # for pressure range, high value
 TIME = 60     # in seconds, for picture taking delay
 
@@ -21,7 +21,7 @@ med_filter  = filter(RESERVED)
 pi_camera   = camera()
 baro_sensor = barometer()
 elapsed_clk = clock()
-data_file   = csv_file()
+data_file   = csvFile()
 
 # some helper variables for image taking
 take_picture  = False
