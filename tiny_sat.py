@@ -4,6 +4,7 @@
 
 from lib.camera import camera
 from lib.clock import clock
+from lib.csv_file import csv_file
 from lib.barometer import barometer
 from lib.median_filter import filter
 from time import sleep
@@ -20,9 +21,7 @@ med_filter  = filter(RESERVED)
 pi_camera   = camera()
 baro_sensor = barometer()
 elapsed_clk = clock()
-
-# opening file
-data = file("data/data.csv", "w")
+data_file   = csv_file()
 
 # some helper variables for image taking
 take_picture  = False
@@ -37,10 +36,9 @@ output += format("   TempF" + "\t")
 output += format("Altitude" + "\t")
 output += format("    Time" + "\t")
 
-# TODO: currently printing to console, but need to print to a tabbed file
+# printing to console and csv file
 print(output)
-data.write(output)
-data.write("\n")
+data_file.write(output)
 
 # a forever loop that constantly reads and handles data
 # 1. barometer values are read and correct pressure is added to median filter
@@ -66,10 +64,9 @@ while True:
             elapsed_clk.getMinutes(),
             elapsed_clk.getSeconds()) + "\t")
 
-    # TODO: currently printing to console, but need to print to a tabbed file
+    # printing to console and csv file
     print(output)
-    data.write(output)
-    data.write("\n")
+    data_file.write(output)
 
     # determine boom deployment time
     if median <= HI_PRES and median >= LO_PRES:
