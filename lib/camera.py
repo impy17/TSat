@@ -31,3 +31,5 @@ class camera:
         if self.camera_connected:
             # done in case of restart
             self.camera.capture(self.dir + "image_" + str(int(time.time())) + ".jpg")
+            return True
+        return False

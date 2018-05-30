@@ -12,6 +12,14 @@
 # concerning the calculations of altitude found in the code below, it is
 # rather a calculation of the change in altitude from some base
 
+# NOTE:
+# If the barometer is not appropriately connected, the getters will return only
+# the following values:
+# getPressure()         returns 0.00
+# getTemperatureC()     returns 20.0
+# getTemperatureF()     returns 68.0
+# getAltitude()         returns 0.00
+
 import math
 import smbus
 import time
@@ -77,8 +85,6 @@ class barometer:
         self.tempC    = self.TEMP / 100.0
         self.tempF    = self.tempC * 1.8 + 32
 
-        # change in altitude calculations
-
     # UTILITY FUNCTIONS
     def readCalibrations(self): 
         coefficients = [0] * 6
@@ -104,25 +110,46 @@ class barometer:
         return coefficients
 
     def readCalibration(self, coefficient):
-        data = bus.read_i2c_block_data(DEVICE_ADDRESS, coefficient, 2)
-        return data[0] * 256 + data[1]
+        # error handling
+        try:
+            data = bus.read_i2c_block_data(DEVICE_ADDRESS, coefficient, 2)
+            return data[0] * 256 + data[1]
+        except:
+            return 0
 
     def readDigitalValue(self):
-        value = bus.read_i2c_block_data(DEVICE_ADDRESS, 0x00, 3)
-        return value[0] * 65536 + value[1] * 256 + value[2]
+        # error handling
+        try:
+            value = bus.read_i2c_block_data(DEVICE_ADDRESS, 0x00, 3)
+            return value[0] * 65536 + value[1] * 256 + value[2]
+        except:
+            return 0
 
     def resetCommand(self):
-        bus.write_byte(DEVICE_ADDRESS, 0x1E)
+        # error handling
+        try:
+            bus.write_byte(DEVICE_ADDRESS, 0x1E)
+        except:
+            pass
         time.sleep(0.003)
 
     def pressureConversionCommand(self):
-        bus.write_byte(DEVICE_ADDRESS, 0x40)
+        # error handling
+        try:
+            bus.write_byte(DEVICE_ADDRESS, 0x40)
+        except:
+            pass
         time.sleep(0.003)
 
     def temperatureConversionCommand(self):
-        bus.write_byte(DEVICE_ADDRESS, 0x50)
+        # error handling
+        try:
+            bus.write_byte(DEVICE_ADDRESS, 0x50)
+        except:
+            pass
         time.sleep(0.003)
 
+    # TODO: test this calculation
     def calculateAltitude(self, pressure):
         altitude = 1 - math.pow((pressure / 1013.25), 0.190264)
         altitude *= 44330.76923
