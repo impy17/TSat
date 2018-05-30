@@ -2,6 +2,8 @@
 
 # TODO: error handling
 
+import RPi.GPIO as GPIO
+
 from lib.camera import camera
 from lib.clock import clock
 from lib.csv_file import csvFile
@@ -24,6 +26,22 @@ baro_sensor = barometer()
 elapsed_clk = clock()
 data_file   = csvFile()
 
+# TODO: set up correct pin numbers
+# TODO: arbitrary pins currently selected
+# all GPIO ports have a 3.3V high and 0V low on GPIO.OUT
+# there is no definable voltage on GPIO.IN
+GPIO.setmode(GPIO.BCM)  # use GPIO pin numbers
+
+# OUTPUT - for wire cutters
+# GPIO.setup(17, GPIO.OUT, initial=0)  # primary wire cutter, board pin 11, initial low
+# GPIO.setup(27, GPIO.OUT, initial=0)  # secondary wire cutter, board pin 13, initial low
+# GPIO.output(port_or_pin, 1)  # set high
+# GPIO.output(port_or_pin, 0)  # set low
+
+# INPUT - for boom switch
+# GPIO.setup(18, GPIO.IN) # boom switch, board pin 12
+# input = GPIO.input(18)  # to get boom switch value [0] open [1] closed?
+
 # some helper variables for image taking
 take_picture  = False
 elapsed_time  = TIME
@@ -37,8 +55,8 @@ output += format("   TempF" + "\t")
 output += format("Altitude" + "\t")  # change in altitude from first sampling
 output += format("    Time" + "\t")  # increment of time starting at 00:00:00
 
-# printing to console and csv file
-print(output)
+# logging to file
+print(output)  # NOTE: only for testing purposes
 data_file.write(output)
 
 # a forever loop that constantly reads and handles data
@@ -66,14 +84,15 @@ while True:
             elapsed_clk.getMinutes(),
             elapsed_clk.getSeconds()) + "\t")
 
-    # printing to console and csv file
-    print(output)
+    # logging to file
+    print(output)  # NOTE: only for testing purposes
     data_file.write(output)
 
     # determine boom deployment time
     if median <= HI_PRES and median >= LO_PRES:
         # TODO: send high to wire cutters
         # TODO: handle boom switch?
+        # TODO: log results
         take_picture = True
 
     # determine picture taking time
