@@ -13,9 +13,9 @@ class camera:
                 stdout=subprocess.PIPE)
         out, err = process.communicate()
         
-        self.camera_connected = false
+        self.camera_connected = False
         if "detected=1" in out:
-            self.camera_connected = true
+            self.camera_connected = True
 
         # if camera is connected, initialize camera
         if self.camera_connected:
