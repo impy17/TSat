@@ -1,5 +1,7 @@
 __pychache__/
-.py[cod]
+*\.py[cod]
+
+data
 
 .swp
 
