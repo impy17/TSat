@@ -119,7 +119,7 @@ while True:
             elapsed_clk.getMinutes(),
             elapsed_clk.getSeconds()) + "\t")
 
-    if boom_switch == 0:
+    if boom_switch == 1:  # NOTE: will read 0 if switch not connected
         output += format("%8s " % "open" + "\t")
     else:
         output += format("%8s " % "closed" + "\t")

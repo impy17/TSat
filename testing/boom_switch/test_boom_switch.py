@@ -35,7 +35,7 @@ GPIO.setup(SWITCH_PIN, GPIO.IN)
 while True:
     input = GPIO.input(SWITCH_PIN)
 
-    if input == 0:
+    if input == 1:
         print("open")
     else:
         print("closed")
