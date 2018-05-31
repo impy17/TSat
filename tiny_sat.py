@@ -12,12 +12,15 @@ from lib.median_filter import filter
 from time import sleep
 from time import time
 
-# constants
+# constant values
 RESERVED = 7  # number of values for median filter
 LO_PRES = -1  # for pressure range, low value  # TODO: 15 for flight
-HI_PRES = 1  # for pressure range, high value  # TODO: 35 for flight
+HI_PRES = 860  # for pressure range, high value  # TODO: 35 for flight
 TIME = 60     # in seconds, for picture taking delay
 DATA_SMPL = 2  # length in seconds between data samples
+
+# constant gpio pin numbers
+SWITCH_PIN = 18  # board pin 12
 
 # constant status strings
 CMR_IMAGED = "CMR_IMGD"  # picam took a picture
@@ -38,15 +41,14 @@ data_file   = csvFile()
 # there is no definable voltage on GPIO.IN
 GPIO.setmode(GPIO.BCM)  # use GPIO pin numbers
 
-# OUTPUT - for wire cutters
+# OUTPUTS - for wire cutters
 # GPIO.setup(17, GPIO.OUT, initial=0)  # primary wire cutter, board pin 11, initial low
 # GPIO.setup(27, GPIO.OUT, initial=0)  # secondary wire cutter, board pin 13, initial low
 # GPIO.output(port_or_pin, 1)  # set high
 # GPIO.output(port_or_pin, 0)  # set low
 
-# INPUT - for boom switch
-# GPIO.setup(18, GPIO.IN) # boom switch, board pin 12
-# input = GPIO.input(18)  # to get boom switch value [0] open [1] closed?
+# INPUTS
+GPIO.setup(SWITCH_PIN, GPIO.IN)
 
 # some helper variables for image taking
 take_picture  = False
@@ -60,6 +62,7 @@ output += format("   TempC" + "\t")
 output += format("   TempF" + "\t")
 output += format("Altitude" + "\t")  # change in altitude from first sampling
 output += format("    Time" + "\t")  # increment of time starting at 00:00:00
+output += format("  Switch" + "\t")
 
 # logging to file
 print(output)  # NOTE: only for testing purposes
@@ -80,14 +83,15 @@ while True:
     med_filter.add(baro_sensor.getPressure())
     elapsed_clk.readTime()
 
+    # read boomswitch open/closed
+    boom_switch = GPIO.input(SWITCH_PIN)
+
     # get median
     median = med_filter.median()
 
     # determine boom deployment time
     if median <= HI_PRES and median >= LO_PRES:
-        # TODO: send high to wire cutters
-        # TODO: handle boom switch?
-        # TODO: log results
+        # TODO: handle wire cutting, update boom switch, and log status
         take_picture = True
 
     # determine picture taking time
@@ -114,6 +118,11 @@ while True:
     output += format("%02d:%02d:%02d" % (elapsed_clk.getHours(),
             elapsed_clk.getMinutes(),
             elapsed_clk.getSeconds()) + "\t")
+
+    if boom_switch == 0:
+        output += format("%8s " % "open" + "\t")
+    else:
+        output += format("%8s " % "closed" + "\t")
 
     # logging to file
     print(output)  # NOTE: only for testing purposes
