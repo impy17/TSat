@@ -3,11 +3,11 @@
 
 import os
 
-class csvFile:
 
-    def __init__(self, directory = "./data/TSat_Files/", file_name = "data.csv"):
+class csvFile:
+    def __init__(self, directory="./data/TSat_Files/", file_name="data.csv"):
         self.path = directory + file_name
-        
+
         if not os.path.exists(directory):
             try:
                 os.makedirs(directory)
@@ -27,4 +27,3 @@ class csvFile:
     def write(self, data):
         self.file.write(data)
         self.file.write("\n")
-
