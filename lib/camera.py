@@ -12,10 +12,12 @@ class camera:
         process = subprocess.Popen(["vcgencmd", "get_camera"],
                 stdout=subprocess.PIPE)
         out, err = process.communicate()
-        
+
         self.camera_connected = False
         if "detected=1" in out:
             self.camera_connected = True
+        else:
+            raise Exception
 
         # if camera is connected, initialize camera
         if self.camera_connected:
@@ -25,11 +27,18 @@ class camera:
         # if directory does not already exist, create it
         if not os.path.exists(directory):
             os.makedirs(directory)
-        
+
+        # Test picture
+        self.camera.capture(self.dir + "image_" + str(int(time.time())) + ".jpg")
+
     def takePicture(self):
         # take a picture if camera is connected
         if self.camera_connected:
             # done in case of restart
-            self.camera.capture(self.dir + "image_" + str(int(time.time())) + ".jpg")
+            try:
+                self.camera.capture(self.dir + "image_" + str(int(time.time())) + ".jpg")
+            except:
+                return False
             return True
         return False
+
