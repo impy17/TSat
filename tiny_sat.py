@@ -21,6 +21,7 @@ DATA_SMPL = 2  # length in seconds between data samples
 
 # constant gpio pin numbers
 SWITCH_PIN = 18  # board pin 12
+LED_PIN = 20     # board pin 38
 
 # constant status strings
 CMR_IMAGED = "CMR_IMGD"  # picam took a picture
@@ -44,6 +45,7 @@ GPIO.setmode(GPIO.BCM)  # use GPIO pin numbers
 # OUTPUTS - for wire cutters
 # GPIO.setup(17, GPIO.OUT, initial=0)  # primary wire cutter, board pin 11, initial low
 # GPIO.setup(27, GPIO.OUT, initial=0)  # secondary wire cutter, board pin 13, initial low
+GPIO.setup(LED_PIN, GPIO.OUT)
 # GPIO.output(port_or_pin, 1)  # set high
 # GPIO.output(port_or_pin, 0)  # set low
 
@@ -67,6 +69,13 @@ output += format("  Switch" + "\t")
 # logging to file
 print(output)  # NOTE: only for testing purposes
 data_file.write(output)
+
+# If we get to this point, most error-prone initialization should
+# have taken place. Turn on status LED for a little bit,
+# then start the main loop.
+GPIO.output(LED_PIN, GPIO.HIGH)
+time.sleep(30)
+GPIO.output(LED_PIN, GPIO.LOW)
 
 # a forever loop that constantly reads and handles data
 # 1. barometer values are read and correct pressure is added to median filter
