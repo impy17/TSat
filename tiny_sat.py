@@ -1,6 +1,7 @@
 # this file is inteded to run on startup, so make sure to add it as a daemon
 
 # TODO: error handling
+import sys
 
 import RPi.GPIO as GPIO
 
@@ -30,11 +31,16 @@ BOM_DEPLOY = "BOM_DPLY"  # boom deployed
 BOM_FAILED = "BOM_FAIL"  # boom did not deploy
 
 # initialization of components
-med_filter  = filter(RESERVED)
-pi_camera   = camera()
-baro_sensor = barometer()
-elapsed_clk = clock()
-data_file   = csvFile()
+try:
+    med_filter  = filter(RESERVED)
+    pi_camera   = camera()
+    baro_sensor = barometer()
+    elapsed_clk = clock()
+    data_file   = csvFile()
+
+except:
+    print("Error during constructors:", sys.exc_info()[0])
+    sys.exit(1)
 
 # TODO: set up correct pin numbers
 # TODO: arbitrary pins currently selected
