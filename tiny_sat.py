@@ -21,8 +21,11 @@ TIME = 60     # in seconds, for picture taking delay
 DATA_SMPL = 2  # length in seconds between data samples
 
 # constant gpio pin numbers
-SWITCH_PIN = 18  # board pin 12
-LED_PIN = 20     # board pin 38
+SWITCH_PIN = 12  # board pin 32, boom switch
+LED_PIN    = 20  # board pin 38, led light
+WIREC_PRIM = 23  # board pin 16, primary wire cutter
+WIREC_SECD = 24  # board pin 18, secondary wire cutter
+BUCK_CONVT = 25  # board pin 22, buck converter
 
 # constant status strings
 CMR_IMAGED = "CMR_IMGD"  # picam took a picture
@@ -42,21 +45,22 @@ except:
     print("Error during constructors:", sys.exc_info()[0])
     sys.exit(1)
 
-# TODO: set up correct pin numbers
-# TODO: arbitrary pins currently selected
-# all GPIO ports have a 3.3V high and 0V low on GPIO.OUT
-# there is no definable voltage on GPIO.IN
-GPIO.setmode(GPIO.BCM)  # use GPIO pin numbers
+# initialization of GPIO pins
+try:
+    GPIO.setmode(GPIO.BCM)  # use GPIO pin numbers
 
-# OUTPUTS - for wire cutters
-# GPIO.setup(17, GPIO.OUT, initial=0)  # primary wire cutter, board pin 11, initial low
-# GPIO.setup(27, GPIO.OUT, initial=0)  # secondary wire cutter, board pin 13, initial low
-GPIO.setup(LED_PIN, GPIO.OUT)
-# GPIO.output(port_or_pin, 1)  # set high
-# GPIO.output(port_or_pin, 0)  # set low
+    # GPIO outputs
+    GPIO.setup(LED_PIN, GPIO.OUT, initial=0)
+    GPIO.setup(WIREC_PRIM, GPIO.OUT, initial=0)
+    GPIO.setup(WIREC_SECD, GPIO.OUT, initial=0)
+    GPIO.setup(BUCK_CONVT, GPIO.OUT, initial=0)
 
-# INPUTS
-GPIO.setup(SWITCH_PIN, GPIO.IN)
+    # GPIO inputs
+    GPIO.setup(SWITCH_PIN, GPIO.IN)
+
+except:
+    print("Error during GPIO setup: ", sys.exc_info()[0])
+    sys.exit(1)
 
 # some helper variables for image taking
 take_picture  = False
@@ -106,8 +110,33 @@ while True:
 
     # determine boom deployment time
     if median <= HI_PRES and median >= LO_PRES:
-        # TODO: handle wire cutting, update boom switch, and log status
-        take_picture = True
+        # if the boom switch is closed
+        # 1. write high to the buck converter
+        # 2. write high to primary wire cutter and wait a second
+        # 3. check if boom switch reads open
+        # 4. if not open, write high to secondary wire cutter and wait
+        # 5. check if boom switch reads open
+        # 6. write status report to file
+        if boom_switch == 0:  # if closed
+            GPIO.OUTPUT(BUCK_CONVT, GPIO.HIGH)
+            GPIO.OUTPUT(WIREC_PRIM, GPIO.HIGH)
+            time.sleep(1)
+            GPIO.OUTPUT(WIREC_PRIM, GPIO.LOW)
+            boom_switch = GPIO.input(SWITCH_PIN)
+            if boom_switch == 0:  # if still closed
+                GPIO.OUTPUT(WIREC_SECD, GPIO.HIGH)
+                time.sleep(1)
+                GPIO.OUTPUT(WIREC_SECD, GPIO.LOW) 
+                boom_switch = GPIO.input(SWITCH_PIN) 
+            GPIO.OUTPUT(BUCK_CONVT, GPIO.LOW)
+            if boom_switch == 0:  # if still closed
+                status = BOM_FAILED
+            else:
+                status = BOM_DEPLOY
+                take_picture = True
+            output =  format("%8s " % status + "\t")
+            print(output)  # NOTE: only for testing purposes
+            data_file.write(output)
 
     # determine picture taking time
     if take_picture:
