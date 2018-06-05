@@ -14,11 +14,12 @@ from time import sleep
 from time import time
 
 # constant values
-RESERVED = 7  # number of values for median filter
-LO_PRES = -1  # for pressure range, low value  # TODO: 15 for flight
-HI_PRES = 860  # for pressure range, high value  # TODO: 35 for flight
-TIME = 60     # in seconds, for picture taking delay
-DATA_SMPL = 2  # length in seconds between data samples
+RESERVED  = 7   # number of values for median filter
+LO_PRES   = -1  # for pressure range, low value  # TODO: 15 for flight
+HI_PRES   = 860 # for pressure range, high value  # TODO: 35 for flight
+TIME      = 60  # in seconds, for picture taking delay
+DATA_SMPL = 2   # length in seconds between data samples
+LED_DELAY = 30  # length of time the status LED stays on
 
 # constant gpio pin numbers
 SWITCH_PIN = 12  # board pin 32, boom switch
@@ -84,7 +85,7 @@ data_file.write(output)
 # have taken place. Turn on status LED for a little bit,
 # then start the main loop.
 GPIO.output(LED_PIN, GPIO.HIGH)
-time.sleep(30)
+sleep(LED_DELAY)
 GPIO.output(LED_PIN, GPIO.LOW)
 
 # a forever loop that constantly reads and handles data
@@ -118,17 +119,17 @@ while True:
         # 5. check if boom switch reads open
         # 6. write status report to file
         if boom_switch == 0:  # if closed
-            GPIO.OUTPUT(BUCK_CONVT, GPIO.HIGH)
-            GPIO.OUTPUT(WIREC_PRIM, GPIO.HIGH)
-            time.sleep(1)
-            GPIO.OUTPUT(WIREC_PRIM, GPIO.LOW)
+            GPIO.output(BUCK_CONVT, GPIO.HIGH)
+            GPIO.output(WIREC_PRIM, GPIO.HIGH)
+            sleep(1)
+            GPIO.output(WIREC_PRIM, GPIO.LOW)
             boom_switch = GPIO.input(SWITCH_PIN)
             if boom_switch == 0:  # if still closed
-                GPIO.OUTPUT(WIREC_SECD, GPIO.HIGH)
-                time.sleep(1)
-                GPIO.OUTPUT(WIREC_SECD, GPIO.LOW) 
+                GPIO.output(WIREC_SECD, GPIO.HIGH)
+                sleep(1)
+                GPIO.output(WIREC_SECD, GPIO.LOW) 
                 boom_switch = GPIO.input(SWITCH_PIN) 
-            GPIO.OUTPUT(BUCK_CONVT, GPIO.LOW)
+            GPIO.output(BUCK_CONVT, GPIO.LOW)
             if boom_switch == 0:  # if still closed
                 status = BOM_FAILED
             else:
