@@ -20,3 +20,4 @@ else
     echo "Already installed"
 fi
 
+svstat /etc/service/tsat
