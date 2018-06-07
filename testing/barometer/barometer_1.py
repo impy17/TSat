@@ -9,17 +9,6 @@
 # potentially be achieved, but such a venture will not be persued at
 # this time
 
-# concerning the calculations of altitude found in the code below, it is
-# rather a calculation of the change in altitude from some base
-
-# NOTE:
-# If the barometer is not appropriately connected, the getters will return only
-# the following values:
-# getPressure()         returns 0.00
-# getTemperatureC()     returns 20.0
-# getTemperatureF()     returns 68.0
-# getAltitude()         returns 0.00
-
 import math
 import smbus
 import time
@@ -43,13 +32,6 @@ class barometer:
         self.tempC    = 0  # in degrees C
         self.tempF    = 0  # in degrees F
 
-        time.sleep(0.003)
-
-        # for base altitude calculation
-        self.readBaro()
-        self.base_altitude = self.calculateAltitude(self.pressure)
-        self.change_altitude = 0
-
     def readBaro(self):
         # read digital pressure value
         self.pressureConversionCommand()
@@ -59,7 +41,7 @@ class barometer:
         self.temperatureConversionCommand()
         self.D2 = self.readDigitalValue()
 
-        # pressure and temperature calculations
+        # calculations
         self.dT   = self.D2 - self.C[4] * 256
         self.TEMP = 2000 + self.dT * self.C[5] / 8388608
         self.OFF  = self.C[1] * 131072 + (self.C[3] * self.dT) / 64
@@ -110,50 +92,24 @@ class barometer:
         return coefficients
 
     def readCalibration(self, coefficient):
-        # error handling
-        try:
-            data = bus.read_i2c_block_data(DEVICE_ADDRESS, coefficient, 2)
-            return data[0] * 256 + data[1]
-        except:
-            return 0
+        data = bus.read_i2c_block_data(DEVICE_ADDRESS, coefficient, 2)
+        return data[0] * 256 + data[1]
 
     def readDigitalValue(self):
-        # error handling
-        try:
-            value = bus.read_i2c_block_data(DEVICE_ADDRESS, 0x00, 3)
-            return value[0] * 65536 + value[1] * 256 + value[2]
-        except:
-            return 0
+        value = bus.read_i2c_block_data(DEVICE_ADDRESS, 0x00, 3)
+        return value[0] * 65536 + value[1] * 256 + value[2]
 
     def resetCommand(self):
-        # error handling
-        try:
-            bus.write_byte(DEVICE_ADDRESS, 0x1E)
-        except:
-            pass
+        bus.write_byte(DEVICE_ADDRESS, 0x1E)
         time.sleep(0.003)
 
     def pressureConversionCommand(self):
-        # error handling
-        try:
-            bus.write_byte(DEVICE_ADDRESS, 0x40)
-        except:
-            pass
+        bus.write_byte(DEVICE_ADDRESS, 0x40)
         time.sleep(0.003)
 
     def temperatureConversionCommand(self):
-        # error handling
-        try:
-            bus.write_byte(DEVICE_ADDRESS, 0x50)
-        except:
-            pass
+        bus.write_byte(DEVICE_ADDRESS, 0x50)
         time.sleep(0.003)
-
-    # TODO: test this calculation
-    def calculateAltitude(self, pressure):
-        altitude = 1 - math.pow((pressure / 1013.25), 0.190264)
-        altitude *= 44330.76923
-        return altitude
 
     # GETTER FUNCTIONS
     def getPressure(self):
@@ -164,8 +120,3 @@ class barometer:
 
     def getTemperatureF(self):
         return self.tempF
-
-    def getAltitude(self, pressure):
-        self.change_altitude = self.calculateAltitude(pressure)
-        self.change_altitude -= self.base_altitude
-        return self.change_altitude
