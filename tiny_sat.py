@@ -15,8 +15,8 @@ from time import time
 
 # constant values
 RESERVED  = 7   # number of values for median filter
-LO_PRES   = -1  # for pressure range, low value  # TODO: 15 for flight
-HI_PRES   = 860 # for pressure range, high value  # TODO: 35 for flight
+LO_PRES   = 5   # for pressure range, low value, 5 for flight
+HI_PRES   = 12  # for pressure range, high value, 12 for flight
 TIME      = 60  # in seconds, for picture taking delay
 DATA_SMPL = 2   # length in seconds between data samples
 LED_DELAY = 30  # length of time the status LED stays on
@@ -121,12 +121,12 @@ while True:
         if boom_switch == 0:  # if closed
             GPIO.output(BUCK_CONVT, GPIO.HIGH)
             GPIO.output(WIREC_PRIM, GPIO.HIGH)
-            sleep(1)
+            sleep(2)
             GPIO.output(WIREC_PRIM, GPIO.LOW)
             boom_switch = GPIO.input(SWITCH_PIN)
             if boom_switch == 0:  # if still closed
                 GPIO.output(WIREC_SECD, GPIO.HIGH)
-                sleep(1)
+                sleep(2)
                 GPIO.output(WIREC_SECD, GPIO.LOW) 
                 boom_switch = GPIO.input(SWITCH_PIN) 
             GPIO.output(BUCK_CONVT, GPIO.LOW)

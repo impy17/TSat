@@ -149,9 +149,11 @@ class barometer:
             pass
         time.sleep(0.003)
 
-    # TODO: test this calculation
     def calculateAltitude(self, pressure):
-        altitude = 1 - math.pow((pressure / 1013.25), 0.190264)
+        if pressure >= 0:
+            altitude = 1 - math.pow((pressure / 1013.25), 0.190264)
+        else:
+            altitude = 1 - math.pow((0 / 1013.25), 0.190264)
         altitude *= 44330.76923
         return altitude
 
